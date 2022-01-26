@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import itertools
 import tempfile
 import os.path
 import shutil
@@ -11,25 +12,33 @@ OUT_FORMAT="{checksum}\t{checksum_type}\t{url}\t{lidvid}\r\n"
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--old_sip", required=True)
+    parser.add_argument("--old_sip", required=True, nargs="+")
     parser.add_argument("--sip", required=True)
     #parser.add_argument("--label", required=True)
     #parser.add_argument("--output_label", required=True)
     args = parser.parse_args()
 
-    old_lids = set(x["lidvid"] for x in read_sip(args.old_sip))
-    deltas = (x for x in read_sip(args.sip) if x["lidvid"] not in old_lids)
-    delta_lines = (OUT_FORMAT.format(**x) for x in deltas)
+    generate_delta(args.old_sip, args.sip)
 
+    return 0
+
+ 
+
+def generate_delta(old_sips, sip):
+    old_lids = set(itertools.chain.from_iterable(extract_lids(x) for x in old_sips))
+    print(old_lids)
+    deltas = (x for x in read_sip(sip) if x["lidvid"] not in old_lids)
+    delta_lines = (OUT_FORMAT.format(**x) for x in deltas)
     
     _, output_path = tempfile.mkstemp()
     with open(output_path, "w") as out:
         for line in delta_lines:
             out.write(line)
-    shutil.move(args.sip, args.sip + ".bak")
-    shutil.copyfile(output_path , args.sip)
+    shutil.move(sip, sip + ".bak")
+    shutil.copyfile(output_path , sip)
 
-    return 0
+def extract_lids(sip):
+    return (x["lidvid"] for x in read_sip(sip))
 
 def read_sip(file_path: str):
     return (parse_sip_line(line) for line in open(file_path))
