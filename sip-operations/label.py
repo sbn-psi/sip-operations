@@ -14,6 +14,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sip", required=True)
     parser.add_argument("--label", required=True)
+    parser.add_argument("--dest", required=True)
+
     args = parser.parse_args()
 
     label = readfile(args.label)
@@ -25,7 +27,10 @@ def main():
     }
     funcs = [functools.partial(replace_element, k, v) for (k,v) in replacements.items()]
     newlabel = functools.reduce(lambda x,f: f(x), funcs, label)
-    replacefile(args.label, newlabel)
+
+    output_path = os.path.join(args.dest, os.path.basename(args.label))
+    with open(output_path, "w") as out:
+        out.write(newlabel)
 
     return 0
 

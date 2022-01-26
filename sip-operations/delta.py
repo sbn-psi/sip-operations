@@ -14,28 +14,28 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--old_sip", required=True, nargs="+")
     parser.add_argument("--sip", required=True)
+    parser.add_argument("--dest", required=True)
     #parser.add_argument("--label", required=True)
     #parser.add_argument("--output_label", required=True)
     args = parser.parse_args()
 
-    generate_delta(args.old_sip, args.sip)
+    generate_delta(args.old_sip, args.sip, args.dest)
 
     return 0
 
  
 
-def generate_delta(old_sips, sip):
+def generate_delta(old_sips, sip, dest):
     old_lids = set(itertools.chain.from_iterable(extract_lids(x) for x in old_sips))
     print(old_lids)
     deltas = (x for x in read_sip(sip) if x["lidvid"] not in old_lids)
     delta_lines = (OUT_FORMAT.format(**x) for x in deltas)
     
-    _, output_path = tempfile.mkstemp()
+    output_file = os.path.basename(sip)
+    output_path = os.path.join(dest, output_file)
     with open(output_path, "w") as out:
         for line in delta_lines:
             out.write(line)
-    shutil.move(sip, sip + ".bak")
-    shutil.copyfile(output_path , sip)
 
 def extract_lids(sip):
     return (x["lidvid"] for x in read_sip(sip))
