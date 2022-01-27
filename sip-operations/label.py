@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-from importlib.metadata import files
 import sys
 import os.path
 import tempfile
