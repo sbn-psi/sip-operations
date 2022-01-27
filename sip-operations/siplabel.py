@@ -7,56 +7,63 @@ import tempfile
 import shutil
 import re
 import functools
+import hashlib
+
+
+from types import SimpleNamespace
+from lxml import etree
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sip", required=True)
+    parser.add_argument("--aiplabel", required=True)
     parser.add_argument("--label", required=True)
     parser.add_argument("--dest", required=True)
 
     args = parser.parse_args()
 
-    label = readfile(args.label)
-    filesize, linecount = get_stats(args.sip)
-    replacements = {
-        "file_size": filesize,
-        "object_length": filesize,
-        "records": linecount
-    }
-    funcs = [functools.partial(replace_element, k, v) for (k,v) in replacements.items()]
-    newlabel = functools.reduce(lambda x,f: f(x), funcs, label)
+    sip_stats = get_stats(args.sip)
+    aip_stats = get_stats(args.aiplabel)
+
+    ns="{http://pds.nasa.gov/pds4/pds/v1}"
+    with open(args.label) as xml:
+        label:etree._ElementTree = etree.parse(xml)
+
+    info_package = label.find(f"{ns}Information_Package_Component_Deep_Archive")
+    info_package.find(f"{ns}manifest_checksum").text = sip_stats.checksum
+    info_package.find(f"{ns}aip_label_checksum").text = aip_stats.checksum
+    
+    file_area = info_package.find(f"{ns}File_Area_SIP_Deep_Archive")
+    manifest = file_area.find(f"{ns}Manifest_SIP_Deep_Archive")
+    manifest.find(f"{ns}object_length").text = sip_stats.filesize
+    manifest.find(f"{ns}records").text = sip_stats.linecount
+    file = file_area.find(f"{ns}File")
+    file.find(f"{ns}file_size").text = sip_stats.filesize
+    file.find(f"{ns}records").text = sip_stats.linecount
+
 
     output_path = os.path.join(args.dest, os.path.basename(args.label))
-    with open(output_path, "w") as out:
-        out.write(newlabel)
+    label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
+
 
     return 0
 
-def replace_element(element_name, value, str):
-    pattern = f"<{element_name}(.*)>.*</{element_name}>"
-    print (pattern)
-    replacement = f"<{element_name}\\1>{value}</{element_name}>"
-    print (replacement)
-    return re.sub(pattern, replacement, str)
-
-def readfile(filename):
-    with open(filename) as f:
-        return f.read()
-
-def replacefile(filename, contents):
-    _, output_path = tempfile.mkstemp()
-    with open(output_path, "w") as out:
-        out.write(contents)
-    
-    if os.path.exists(filename):
-        shutil.move(filename, filename + ".bak")
-    shutil.move(output_path, filename)
 
 def get_stats(filepath):
     filesize = os.path.getsize(filepath)
     linecount = sum(1 for x in open(filepath))
-    return filesize, linecount
+    checksum = get_checksum(filepath)
+    return SimpleNamespace(
+        filesize=str(filesize), 
+        linecount=str(linecount), 
+        checksum=checksum)
+
+def get_checksum(filepath):
+    with(open(filepath, "rb") as file):
+        md5 = hashlib.md5()
+        md5.update(file.read())
+        return md5.hexdigest()
 
 
 
