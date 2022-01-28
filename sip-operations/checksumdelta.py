@@ -29,6 +29,8 @@ def generate_checksum_delta(checksum, old_checksums, dest):
         for line in delta_lines:
             out.write(line)
 
+    return output_path
+
 def read_checksum(file_path: str):
     return (parse_checksum_line(line) for line in open(file_path))
 

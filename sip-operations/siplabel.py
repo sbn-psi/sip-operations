@@ -23,11 +23,16 @@ def main():
 
     args = parser.parse_args()
 
-    sip_stats = get_stats(args.sip)
-    aip_stats = get_stats(args.aiplabel)
+    gen_sip_label(args.sip, args.label, args.aiplabel, args.dest)
+
+    return 0
+
+def gen_sip_label(sip, siplabel, aiplabel, dest):
+    sip_stats = get_stats(sip)
+    aip_stats = get_stats(aiplabel)
 
     ns="{http://pds.nasa.gov/pds4/pds/v1}"
-    with open(args.label) as xml:
+    with open(siplabel) as xml:
         label:etree._ElementTree = etree.parse(xml)
 
     info_package = label.find(f"{ns}Information_Package_Component_Deep_Archive")
@@ -43,11 +48,9 @@ def main():
     file.find(f"{ns}records").text = sip_stats.linecount
 
 
-    output_path = os.path.join(args.dest, os.path.basename(args.label))
+    output_path = os.path.join(dest, os.path.basename(siplabel))
     label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
-
-    return 0
 
 
 def get_stats(filepath):

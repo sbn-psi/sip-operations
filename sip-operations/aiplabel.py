@@ -24,11 +24,17 @@ def main():
 
     args = parser.parse_args()
 
-    checksum_stats = get_stats(args.checksum)
-    transfer_stats = get_stats(args.transfer)
+    gen_aip_label(args.checksum, args.transfer, args.label, args.dest)
+
+
+    return 0
+
+def gen_aip_label(checksum, transfer, aiplabel, dest):
+    checksum_stats = get_stats(checksum)
+    transfer_stats = get_stats(transfer)
 
     ns="{http://pds.nasa.gov/pds4/pds/v1}"
-    with open(args.label) as xml:
+    with open(aiplabel) as xml:
         label:etree._ElementTree = etree.parse(xml)
 
     info_package = label.find(f"{ns}Information_Package_Component")
@@ -49,10 +55,11 @@ def main():
     t_file.find(f"{ns}file_size").text = transfer_stats.filesize
     t_file.find(f"{ns}records").text = transfer_stats.linecount
 
-    output_path = os.path.join(args.dest, os.path.basename(args.label))
+    output_path = os.path.join(dest, os.path.basename(aiplabel))
     label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
-    return 0
+    return output_path
+
 
 def get_stats(filepath):
     filesize = os.path.getsize(filepath)

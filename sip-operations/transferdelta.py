@@ -29,6 +29,8 @@ def generate_transfer_delta(transfer, old_transfers, dest):
         for line in delta_lines:
             out.write(line)
 
+    return output_path
+
 def read_transfer(file_path: str):
     return (parse_transfer_line(line.strip("\r\n")) for line in open(file_path))
 

@@ -37,6 +37,8 @@ def generate_delta(old_sips, sip, dest):
         for line in delta_lines:
             out.write(line)
 
+    return output_path
+
 def extract_lids(sip):
     return (x["lidvid"] for x in read_sip(sip))
 
