@@ -29,13 +29,19 @@ def main():
 
     return 0
 
-def gen_aip_label(checksum, transfer, aiplabel, dest):
+def gen_aip_label(checksum, transfer, aiplabel, dest, suffix):
     checksum_stats = get_stats(checksum)
     transfer_stats = get_stats(transfer)
 
     ns="{http://pds.nasa.gov/pds4/pds/v1}"
     with open(aiplabel) as xml:
         label:etree._ElementTree = etree.parse(xml)
+
+    id_area = label.find(f"{ns}Identification_Area")
+    lid_element = id_area.find(f"{ns}logical_identifier")
+    new_lid = lid_element.text + "_" + suffix
+    new_lidvid = f"{new_lid}::1.0"
+    lid_element.text = new_lid
 
     info_package = label.find(f"{ns}Information_Package_Component")
     info_package.find(f"{ns}checksum_manifest_checksum").text = checksum_stats.checksum
@@ -47,6 +53,7 @@ def gen_aip_label(checksum, transfer, aiplabel, dest):
     c_file = file_area_checksum_manifest.find(f"{ns}File")
     c_file.find(f"{ns}file_size").text = checksum_stats.filesize
     c_file.find(f"{ns}records").text = checksum_stats.linecount
+    c_file.find(f"{ns}file_name").text = os.path.basename(checksum)
 
     file_area_transfer_manifest = info_package.find(f"{ns}File_Area_Transfer_Manifest")
     transfer_manifest = file_area_transfer_manifest.find(f"{ns}Transfer_Manifest")
@@ -54,11 +61,12 @@ def gen_aip_label(checksum, transfer, aiplabel, dest):
     t_file = file_area_transfer_manifest.find(f"{ns}File")
     t_file.find(f"{ns}file_size").text = transfer_stats.filesize
     t_file.find(f"{ns}records").text = transfer_stats.linecount
+    t_file.find(f"{ns}file_name").text = os.path.basename(transfer)
 
-    output_path = os.path.join(dest, os.path.basename(aiplabel))
+    output_path = os.path.join(dest, os.path.basename(aiplabel).replace("aip", f"aip_{suffix}"))
     label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
-    return output_path
+    return new_lidvid, output_path
 
 
 def get_stats(filepath):

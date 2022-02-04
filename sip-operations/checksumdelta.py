@@ -13,18 +13,19 @@ def main():
     parser.add_argument("--checksum", required=True)
     parser.add_argument("--old_checksum", required=True, nargs='+')
     parser.add_argument("--dest", required=True)
+    parser.add_argument("--suffix", required=True)
     args = parser.parse_args()
 
-    generate_checksum_delta(args.checksum, args.old_checksum, args.dest)
+    generate_checksum_delta(args.checksum, args.old_checksum, args.dest, args.suffix)
 
-def generate_checksum_delta(checksum, old_checksums, dest):
+def generate_checksum_delta(checksum, old_checksums, dest, suffix):
     old_entries = set(itertools.chain.from_iterable(
         (c.filename for c in read_checksum(x)) 
         for x in old_checksums))
     deltas = (x for x in read_checksum(checksum) if x.filename not in old_entries)
     delta_lines = (f"{x.checksum}\t{x.filename}\r\n" for x in deltas)
 
-    output_path = os.path.join(dest, os.path.basename(checksum))
+    output_path = os.path.join(dest, os.path.basename(checksum).replace("checksum_manifest", f"checksum_manifest_{suffix}"))
     with open(output_path, "w") as out:
         for line in delta_lines:
             out.write(line)
