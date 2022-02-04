@@ -18,9 +18,9 @@ def main():
 
     generate_transfer_delta(args.transfer, args.old_transfer, args.dest, args.suffix)
 
-def generate_transfer_delta(transfer, old_transfers, dest, suffix):
+def generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid):
     old_entries = set(itertools.chain.from_iterable(
-        ((t.lidvid, t.filename) for t in read_transfer(x))
+        ((t.lidvid, t.filename) for t in read_transfer(x) if not t.lidvid == bundle_lidvid)
         for x in old_transfers))
     deltas = (x for x in read_transfer(transfer) if (x.lidvid, x.filename) not in old_entries)
     delta_lines = (f"{x.lidvid:255}{x.filename:255}\r\n" for x in deltas)

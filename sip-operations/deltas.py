@@ -7,6 +7,9 @@ import os
 import re
 import datetime
 
+from lxml import etree
+
+
 import transferdelta
 import sipdelta
 import aiplabel
@@ -17,6 +20,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--old_dir")
     parser.add_argument("--new_dir")
+    parser.add_argument("--bundle_label")
     args = parser.parse_args()
 
     dest = os.path.join(args.new_dir, "deltas")
@@ -25,17 +29,19 @@ def main():
     datestr = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     suffix = f"delta_{datestr}"
 
+    bundle_lidvid = extract_lidvid(args.bundle_label)
+
     old_sips = find_files(args.old_dir, ".*sip.*tab")
     sip = find_files(args.new_dir, ".*sip.*tab")[0]
-    delta_sip = sipdelta.generate_delta(old_sips, sip, dest, suffix)
+    delta_sip = sipdelta.generate_delta(old_sips, sip, dest, suffix, bundle_lidvid)
 
     old_transfers = find_files(args.old_dir, ".*transfer.*tab")
     transfer = find_files(args.new_dir, ".*transfer.*tab")[0]
-    delta_transfer = transferdelta.generate_transfer_delta(transfer, old_transfers, dest, suffix)
+    delta_transfer = transferdelta.generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid)
 
     old_checksums = find_files(args.old_dir, ".*checksum.*tab")
     checksum = find_files(args.new_dir, ".*checksum.*tab")[0]
-    delta_checksum = checksumdelta.generate_checksum_delta(checksum, old_checksums, dest, suffix)
+    delta_checksum = checksumdelta.generate_checksum_delta(checksum, old_checksums, dest, suffix, args.bundle_label)
 
     aip_label = find_files(args.new_dir, ".*aip.*xml")[0]
     aip_lidvid, generated_aip_label = aiplabel.gen_aip_label(delta_checksum, delta_transfer, aip_label, dest, suffix)
@@ -47,6 +53,18 @@ def main():
 
 def find_files(dirname, pattern):
     return [os.path.join(dirname, x) for x in os.listdir(dirname) if re.match(pattern, x)]
+
+def extract_lidvid(bundle_file):
+    ns="{http://pds.nasa.gov/pds4/pds/v1}"
+    with open(bundle_file) as xml:
+        label:etree._ElementTree = etree.parse(xml)
+
+    id_area = label.find(f"{ns}Identification_Area")
+    lid = id_area.find(f"{ns}logical_identifier").text
+    vid = id_area.find(f"{ns}version_id").text
+    return f"{lid}::{vid}"
+
+
 
 if __name__ == '__main__':
     sys.exit(main())
