@@ -26,7 +26,7 @@ def main():
     dest = os.path.join(args.new_dir, "deltas")
     os.makedirs(dest, exist_ok=True)
 
-    datestr = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    datestr = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
     suffix = f"delta_{datestr}"
 
     bundle_lidvid = extract_lidvid(args.bundle_label)
