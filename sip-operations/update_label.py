@@ -26,7 +26,7 @@ def main():
     generated_aip_label = aiplabel.gen_aip_label(checksum, transfer, aip_label_src, aip_label)
 
     sip_label_src, sip_label = backup_label(find_file(args.sip_dir, ".*sip.*xml"))
-    siplabel.gen_sip_label(sip, sip_label_src, generated_aip_label, sip_label)
+    siplabel.update_sip_checksums(sip, sip_label_src, generated_aip_label, sip_label)
 
     return 0
 
