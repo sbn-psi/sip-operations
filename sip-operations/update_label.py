@@ -23,10 +23,10 @@ def main():
     checksum = find_file(args.sip_dir, ".*checksum.*tab")
 
     aip_label_src, aip_label = backup_label(find_file(args.sip_dir, ".*aip.*xml"))
-    generated_aip_label = aiplabel.gen_aip_label(checksum, transfer, aip_label_src, aip_label)
+    aiplabel.update_aip_checksums(checksum, transfer, aip_label_src, aip_label)
 
     sip_label_src, sip_label = backup_label(find_file(args.sip_dir, ".*sip.*xml"))
-    siplabel.update_sip_checksums(sip, sip_label_src, generated_aip_label, sip_label)
+    siplabel.update_sip_checksums(sip, sip_label_src, aip_label, sip_label)
 
     return 0
 
