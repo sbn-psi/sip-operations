@@ -29,8 +29,8 @@ def main():
 
 def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid):
     old_lids = set(l for l in itertools.chain.from_iterable(extract_lids(x) for x in old_sips) if not l == bundle_lidvid)
-    print(old_lids)
-    deltas = (x for x in read_sip(sip) if x["lidvid"] not in old_lids)
+    #print(old_lids)
+    deltas = (x for x in read_sip(sip) if x["url"] not in old_lids)
     delta_lines = (OUT_FORMAT.format(**x) for x in deltas)
     
     output_file = os.path.basename(sip).replace("sip", f"sip_{suffix}")
@@ -42,7 +42,7 @@ def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid):
     return output_path
 
 def extract_lids(sip):
-    return (x["lidvid"] for x in read_sip(sip))
+    return (x["url"] for x in read_sip(sip))
 
 def read_sip(file_path: str):
     return (parse_sip_line(line) for line in open(file_path))

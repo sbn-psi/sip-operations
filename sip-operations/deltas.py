@@ -18,9 +18,9 @@ import checksumdelta
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--old_dir")
-    parser.add_argument("--new_dir")
-    parser.add_argument("--bundle_label")
+    parser.add_argument("--old_dir", required=True)
+    parser.add_argument("--new_dir", required=True)
+    parser.add_argument("--bundle_label", required=True)
     args = parser.parse_args()
 
     dest = os.path.join(args.new_dir, "deltas")
@@ -30,10 +30,11 @@ def main():
     suffix = f"delta_{datestr}"
 
     bundle_lidvid = extract_lidvid(args.bundle_label)
+    bundle_url="https://sbnarchive.psi.edu/pds4/surveys/gbo.ast.catalina.survey/bundle_gbo.ast.catalina.survey_v1.0.xml"
 
     old_sips = find_files(args.old_dir, ".*sip.*tab")
     sip = find_files(args.new_dir, ".*sip.*tab")[0]
-    delta_sip = sipdelta.generate_delta(old_sips, sip, dest, suffix, bundle_lidvid)
+    delta_sip = sipdelta.generate_delta(old_sips, sip, dest, suffix, bundle_url)
 
     old_transfers = find_files(args.old_dir, ".*transfer.*tab")
     transfer = find_files(args.new_dir, ".*transfer.*tab")[0]
