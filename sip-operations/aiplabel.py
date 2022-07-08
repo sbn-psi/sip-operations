@@ -24,7 +24,7 @@ def main():
 
     args = parser.parse_args()
 
-    gen_aip_label(args.checksum, args.transfer, args.label, args.dest)
+    gen_aip_label(args.checksum, args.transfer, args.label, args.dest, None)
 
 
     return 0
@@ -39,7 +39,7 @@ def gen_aip_label(checksum, transfer, aiplabel, dest, suffix):
 
     id_area = label.find(f"{ns}Identification_Area")
     lid_element = id_area.find(f"{ns}logical_identifier")
-    new_lid = lid_element.text + "_" + suffix
+    new_lid = lid_element.text + "_" + suffix if suffix else lid_element.text
     new_lidvid = f"{new_lid}::1.0"
     lid_element.text = new_lid
 
@@ -63,7 +63,7 @@ def gen_aip_label(checksum, transfer, aiplabel, dest, suffix):
     t_file.find(f"{ns}records").text = transfer_stats.linecount
     t_file.find(f"{ns}file_name").text = os.path.basename(transfer)
 
-    output_path = os.path.join(dest, os.path.basename(aiplabel).replace("aip", f"aip_{suffix}"))
+    output_path = os.path.join(dest, os.path.basename(aiplabel).replace("aip", f"aip_{suffix}") if suffix else os.path.basename(aiplabel))
     label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
     return new_lidvid, output_path

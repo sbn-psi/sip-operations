@@ -23,7 +23,7 @@ def main():
 
     args = parser.parse_args()
 
-    gen_sip_label(args.sip, args.label, args.aiplabel, args.dest)
+    gen_sip_label(args.sip, args.label, args.aiplabel, None, args.dest, None)
 
     return 0
 
@@ -34,15 +34,17 @@ def gen_sip_label(sip, siplabel, aiplabel, aip_lidvid, dest, suffix):
     ns="{http://pds.nasa.gov/pds4/pds/v1}"
     with open(siplabel) as xml:
         label:etree._ElementTree = etree.parse(xml)
-
-    id_area = label.find(f"{ns}Identification_Area")
-    lid_element = id_area.find(f"{ns}logical_identifier")
-    lid_element.text = lid_element.text + "_" + suffix
+   
+    if suffix:
+        id_area = label.find(f"{ns}Identification_Area")
+        lid_element = id_area.find(f"{ns}logical_identifier")
+        lid_element.text = lid_element.text + "_" + suffix
 
     info_package = label.find(f"{ns}Information_Package_Component_Deep_Archive")
     info_package.find(f"{ns}manifest_checksum").text = sip_stats.checksum
     info_package.find(f"{ns}aip_label_checksum").text = aip_stats.checksum
-    info_package.find(f"{ns}aip_lidvid").text = aip_lidvid
+    if aip_lidvid:
+        info_package.find(f"{ns}aip_lidvid").text = aip_lidvid
     manifest_url = info_package.find(f"{ns}manifest_url")
     manifest_url.text = manifest_url.text.replace("sip", f"sip_{suffix}")
     
