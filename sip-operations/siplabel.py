@@ -35,6 +35,8 @@ def gen_sip_label(sip, siplabel, aiplabel, aip_lidvid, dest, suffix):
     with open(siplabel) as xml:
         label:etree._ElementTree = etree.parse(xml)
    
+    print(suffix is not None)
+    print(f"sip_{suffix}" if suffix is not None else "sip")
     if suffix:
         id_area = label.find(f"{ns}Identification_Area")
         lid_element = id_area.find(f"{ns}logical_identifier")
@@ -46,8 +48,10 @@ def gen_sip_label(sip, siplabel, aiplabel, aip_lidvid, dest, suffix):
     if aip_lidvid:
         info_package.find(f"{ns}aip_lidvid").text = aip_lidvid
     manifest_url = info_package.find(f"{ns}manifest_url")
-    manifest_url.text = manifest_url.text.replace("sip", f"sip_{suffix}")
-    
+    print(manifest_url.text)
+    manifest_url.text = manifest_url.text.replace("sip", f"sip_{suffix}" if suffix is not None else "sip")
+
+    print(manifest_url.text.replace("sip", f"sip_{suffix}" if suffix is not None else "sip"))
     
     file_area = info_package.find(f"{ns}File_Area_SIP_Deep_Archive")
     manifest = file_area.find(f"{ns}Manifest_SIP_Deep_Archive")
@@ -59,7 +63,7 @@ def gen_sip_label(sip, siplabel, aiplabel, aip_lidvid, dest, suffix):
     file.find(f"{ns}file_name").text = os.path.basename(sip)
 
 
-    output_path = os.path.join(dest, os.path.basename(siplabel).replace("sip", f"sip_{suffix}"))
+    output_path = os.path.join(dest, os.path.basename(siplabel).replace("sip", f"sip_{suffix}" if suffix is not None else "sip"))
     label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
 def update_sip_checksums(sip, siplabel, aiplabel, output_path):
