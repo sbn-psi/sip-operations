@@ -24,7 +24,7 @@ def main():
 
     args = parser.parse_args()
 
-    gen_aip_label(args.checksum, args.transfer, args.label, args.dest)
+    gen_aip_label(args.checksum, args.transfer, args.label, args.dest, None)
 
 
     return 0
@@ -39,31 +39,15 @@ def gen_aip_label(checksum, transfer, aiplabel, dest, suffix):
 
     id_area = label.find(f"{ns}Identification_Area")
     lid_element = id_area.find(f"{ns}logical_identifier")
-    new_lid = lid_element.text + "_" + suffix
+    new_lid = lid_element.text + "_" + suffix if suffix else lid_element.text
     new_lidvid = f"{new_lid}::1.0"
     lid_element.text = new_lid
 
-    info_package = label.find(f"{ns}Information_Package_Component")
-    info_package.find(f"{ns}checksum_manifest_checksum").text = checksum_stats.checksum
-    info_package.find(f"{ns}transfer_manifest_checksum").text = transfer_stats.checksum
-    
-    file_area_checksum_manifest = info_package.find(f"{ns}File_Area_Checksum_Manifest")
-    checksum_manifest = file_area_checksum_manifest.find(f"{ns}Checksum_Manifest")
-    checksum_manifest.find(f"{ns}object_length").text = checksum_stats.filesize
-    c_file = file_area_checksum_manifest.find(f"{ns}File")
-    c_file.find(f"{ns}file_size").text = checksum_stats.filesize
-    c_file.find(f"{ns}records").text = checksum_stats.linecount
-    c_file.find(f"{ns}file_name").text = os.path.basename(checksum)
+    info_package = update_info_package_element(label, ns, checksum_stats, transfer_stats)
+    update_checksum_manifest_element(info_package, ns, checksum_stats, checksum)
+    update_transfer_manifest_element(info_package, ns, transfer_stats, transfer)
 
-    file_area_transfer_manifest = info_package.find(f"{ns}File_Area_Transfer_Manifest")
-    transfer_manifest = file_area_transfer_manifest.find(f"{ns}Transfer_Manifest")
-    transfer_manifest.find(f"{ns}records").text = transfer_stats.linecount
-    t_file = file_area_transfer_manifest.find(f"{ns}File")
-    t_file.find(f"{ns}file_size").text = transfer_stats.filesize
-    t_file.find(f"{ns}records").text = transfer_stats.linecount
-    t_file.find(f"{ns}file_name").text = os.path.basename(transfer)
-
-    output_path = os.path.join(dest, os.path.basename(aiplabel).replace("aip", f"aip_{suffix}"))
+    output_path = os.path.join(dest, os.path.basename(aiplabel).replace("aip", f"aip_{suffix}") if suffix else os.path.basename(aiplabel))
     label.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
 
     return new_lidvid, output_path
@@ -76,27 +60,39 @@ def update_aip_checksums(checksum, transfer, aiplabel, dest):
     with open(aiplabel) as xml:
         label:etree._ElementTree = etree.parse(xml)
 
+    info_package = update_info_package_element(label, ns, checksum_stats, transfer_stats)
+    update_checksum_manifest_element(info_package, ns, checksum_stats)
+    update_transfer_manifest_element(info_package, ns, transfer_stats)
+
+    label.write(dest, encoding="utf-8", xml_declaration=True, pretty_print=True)
+
+    return dest    
+
+def update_info_package_element(label, ns, checksum_stats, transfer_stats):
     info_package = label.find(f"{ns}Information_Package_Component")
     info_package.find(f"{ns}checksum_manifest_checksum").text = checksum_stats.checksum
     info_package.find(f"{ns}transfer_manifest_checksum").text = transfer_stats.checksum
-    
+    return info_package
+
+def update_checksum_manifest_element(info_package, ns, checksum_stats, checksum=None):
     file_area_checksum_manifest = info_package.find(f"{ns}File_Area_Checksum_Manifest")
     checksum_manifest = file_area_checksum_manifest.find(f"{ns}Checksum_Manifest")
     checksum_manifest.find(f"{ns}object_length").text = checksum_stats.filesize
     c_file = file_area_checksum_manifest.find(f"{ns}File")
     c_file.find(f"{ns}file_size").text = checksum_stats.filesize
     c_file.find(f"{ns}records").text = checksum_stats.linecount
+    if checksum:
+        c_file.find(f"{ns}file_name").text = os.path.basename(checksum)
 
+def update_transfer_manifest_element(info_package, ns, transfer_stats, transfer=None):
     file_area_transfer_manifest = info_package.find(f"{ns}File_Area_Transfer_Manifest")
     transfer_manifest = file_area_transfer_manifest.find(f"{ns}Transfer_Manifest")
     transfer_manifest.find(f"{ns}records").text = transfer_stats.linecount
     t_file = file_area_transfer_manifest.find(f"{ns}File")
     t_file.find(f"{ns}file_size").text = transfer_stats.filesize
     t_file.find(f"{ns}records").text = transfer_stats.linecount
-
-    label.write(dest, encoding="utf-8", xml_declaration=True, pretty_print=True)
-
-    return dest    
+    if transfer:
+        t_file.find(f"{ns}file_name").text = os.path.basename(transfer)
 
 
 def get_stats(filepath):
