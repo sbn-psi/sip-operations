@@ -19,9 +19,7 @@ def main():
     generate_checksum_delta(args.checksum, args.old_checksum, args.dest, args.suffix)
 
 def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filename):
-    old_entries = set(itertools.chain.from_iterable(
-        (c.filename for c in read_checksum(x)  if not os.path.basename(c.filename) == os.path.basename(bundle_filename)) 
-        for x in old_checksums))
+    old_entries = read_old_entries(old_checksums, bundle_filename)
     deltas = (x for x in read_checksum(checksum) if x.filename not in old_entries)
     delta_lines = (f"{x.checksum}\t{x.filename}\r\n" for x in deltas)
 
@@ -31,6 +29,11 @@ def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filena
             out.write(line)
 
     return output_path
+
+def read_old_entries(old_checksums, bundle_filename):
+    return set(itertools.chain.from_iterable(
+        (c.filename for c in read_checksum(x)  if not os.path.basename(c.filename) == os.path.basename(bundle_filename)) 
+        for x in old_checksums))
 
 def read_checksum(file_path: str):
     return (parse_checksum_line(line) for line in open(file_path))
