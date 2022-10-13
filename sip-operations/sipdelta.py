@@ -27,7 +27,7 @@ def main():
 
  
 
-def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid):
+def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid, latest_collection_lidvids):
     old_lids = read_old_entries(old_sips, bundle_lidvid)
     #print(old_lids)
     deltas = (x for x in read_sip(sip) if x["url"] not in old_lids)
