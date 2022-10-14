@@ -34,21 +34,21 @@ def main():
 
     old_transfers = find_files(args.old_dir, ".*transfer.*tab$")
     transfer = find_files(args.new_dir, ".*transfer.*tab$")[0]
-    latest_collection_lidvids = transferdelta.get_latest_collection_lidvids(transfer)
-    print(latest_collection_lidvids)
-    latest_collection_filenames = transferdelta.get_latest_collection_filenames(transfer, latest_collection_lidvids)
-    print(latest_collection_filenames)
-    delta_transfer = transferdelta.generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid, latest_collection_lidvids)
+    superseded_collection_lidvids = transferdelta.get_superseded_collection_lidvids(transfer)
+    print(superseded_collection_lidvids)
+    superseded_collection_filenames = transferdelta.get_superseded_collection_filenames(transfer, superseded_collection_lidvids)
+    print(superseded_collection_filenames)
+    delta_transfer = transferdelta.generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid, superseded_collection_lidvids)
 
     old_sips = find_files(args.old_dir, ".*sip.*tab$")
     sip = find_files(args.new_dir, ".*sip.*tab$")[0]
-    delta_sip = sipdelta.generate_delta(old_sips, sip, dest, suffix, bundle_url, latest_collection_lidvids)
+    delta_sip = sipdelta.generate_delta(old_sips, sip, dest, suffix, bundle_url, superseded_collection_lidvids)
 
 
 
     old_checksums = find_files(args.old_dir, ".*checksum.*tab$")
     checksum = find_files(args.new_dir, ".*checksum.*tab$")[0]
-    delta_checksum = checksumdelta.generate_checksum_delta(checksum, old_checksums, dest, suffix, args.bundle_label, latest_collection_filenames)
+    delta_checksum = checksumdelta.generate_checksum_delta(checksum, old_checksums, dest, suffix, args.bundle_label, superseded_collection_filenames)
 
     aip_label = find_files(args.new_dir, ".*aip.*xml$")[0]
     aip_lidvid, generated_aip_label = aiplabel.gen_aip_label(delta_checksum, delta_transfer, aip_label, dest, suffix)

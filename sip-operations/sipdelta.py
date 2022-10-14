@@ -27,10 +27,10 @@ def main():
 
  
 
-def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid, latest_collection_lidvids):
+def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid, excluded_lidvids=[]):
     old_lids = read_old_entries(old_sips, bundle_lidvid)
     #print(old_lids)
-    deltas = (x for x in read_sip(sip) if x["url"] not in old_lids)
+    deltas = (x for x in read_sip(sip) if x["url"] not in old_lids and x["lidvid"] not in excluded_lidvids)
     delta_lines = (OUT_FORMAT.format(**x) for x in deltas)
     
     output_file = os.path.basename(sip).replace("sip", f"sip_{suffix}")

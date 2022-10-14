@@ -19,11 +19,11 @@ def main():
 
     generate_transfer_delta(args.transfer, args.old_transfer, args.dest, args.suffix)
 
-def generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid, latest_collection_lidvids):
+def generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid, excluded_lidvids=[]):
     old_entries = read_old_entries(old_transfers, bundle_lidvid)
     deltas = (x for x in read_transfer(transfer) 
         if (x.lidvid, x.filename) not in old_entries 
-        and (x.lidvid in latest_collection_lidvids or latest_collection_lidvids is None))
+        and x.lidvid not in excluded_lidvids)
     delta_lines = (f"{x.lidvid:255}{x.filename:255}\r\n" for x in deltas)
     
     output_path = os.path.join(dest, os.path.basename(transfer).replace("transfer_manifest", f"transfer_manifest_{suffix}"))
@@ -47,18 +47,16 @@ def parse_transfer_line(line: str):
         filename=line[256:].strip()
     )
 
-def get_latest_collection_lidvids(file_path):
+def get_superseded_collection_lidvids(file_path):
     parsed_lidvids = (parse_lidvid(x.lidvid) for x in read_transfer(file_path))
     collection_descs = sorted((x for x in parsed_lidvids if x.collection is not None), key=lambda x: x.collection)
-    #print("\n".join(x.__repr__() for x in collection_descs))
     collections_by_id = itertools.groupby(collection_descs, lambda x: x.collection)
-    #collections_by_id = [(x, list(y)) for x,y in collections_by_id]
-    #print(collections_by_id)
     latest_collections = (max(collections, key = lambda x: (x.major, x.minor)) for _, collections in collections_by_id)
-    return list(x.lidvid for x in latest_collections)
+    latest_collection_lidvids = set(x.lidvid for x in latest_collections)
+    return set(x.lidvid for x in collection_descs if x.lidvid not in latest_collection_lidvids)
 
-def get_latest_collection_filenames(file_path, latest_collection_lidvids):
-    return (x.filename for x in read_transfer(file_path) if x.lidvid in latest_collection_lidvids)
+def get_superseded_collection_filenames(file_path, superseded_collection_lidvids):
+    return set(x.filename for x in read_transfer(file_path) if x.lidvid in superseded_collection_lidvids)
 
 def parse_lidvid(lidvid):
     lid, vid = lidvid.split('::')

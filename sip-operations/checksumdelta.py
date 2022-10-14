@@ -18,9 +18,9 @@ def main():
 
     generate_checksum_delta(args.checksum, args.old_checksum, args.dest, args.suffix)
 
-def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filename, latest_collection_filenames):
+def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filename, excluded_filenames):
     old_entries = read_old_entries(old_checksums, bundle_filename)
-    deltas = (x for x in read_checksum(checksum) if x.filename not in old_entries and ('/' + x.filename in latest_collection_filenames or latest_collection_filenames is None))
+    deltas = (x for x in read_checksum(checksum) if x.filename not in old_entries and x.filename not in excluded_filenames)
     delta_lines = (f"{x.checksum}\t{x.filename}\r\n" for x in deltas)
 
     output_path = os.path.join(dest, os.path.basename(checksum).replace("checksum_manifest", f"checksum_manifest_{suffix}"))
