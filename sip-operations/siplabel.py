@@ -3,10 +3,6 @@
 import argparse
 import sys
 import os.path
-import tempfile
-import shutil
-import re
-import functools
 import hashlib
 
 

@@ -4,10 +4,6 @@ import argparse
 from cmath import inf
 import sys
 import os.path
-import tempfile
-import shutil
-import re
-import functools
 import hashlib
 from xml.etree.ElementTree import ElementTree
 from lxml import etree
@@ -30,6 +26,8 @@ def main():
     return 0
 
 def gen_aip_label(checksum, transfer, aiplabel, dest, suffix):
+    '''Creates a label for the AIP product'''
+
     checksum_stats = get_stats(checksum)
     transfer_stats = get_stats(transfer)
 
@@ -53,6 +51,7 @@ def gen_aip_label(checksum, transfer, aiplabel, dest, suffix):
     return new_lidvid, output_path
 
 def update_aip_checksums(checksum, transfer, aiplabel, dest):
+    '''Installs new checksums in an AIP product label'''
     checksum_stats = get_stats(checksum)
     transfer_stats = get_stats(transfer)
 
@@ -69,12 +68,14 @@ def update_aip_checksums(checksum, transfer, aiplabel, dest):
     return dest    
 
 def update_info_package_element(label, ns, checksum_stats, transfer_stats):
+    '''Installs new checksums in the Information_Package_Component element'''
     info_package = label.find(f"{ns}Information_Package_Component")
     info_package.find(f"{ns}checksum_manifest_checksum").text = checksum_stats.checksum
     info_package.find(f"{ns}transfer_manifest_checksum").text = transfer_stats.checksum
     return info_package
 
 def update_checksum_manifest_element(info_package, ns, checksum_stats, checksum=None):
+    '''Installs new stats in the File_Area_Checksum_Manifest element'''
     file_area_checksum_manifest = info_package.find(f"{ns}File_Area_Checksum_Manifest")
     checksum_manifest = file_area_checksum_manifest.find(f"{ns}Checksum_Manifest")
     checksum_manifest.find(f"{ns}object_length").text = checksum_stats.filesize
@@ -85,6 +86,7 @@ def update_checksum_manifest_element(info_package, ns, checksum_stats, checksum=
         c_file.find(f"{ns}file_name").text = os.path.basename(checksum)
 
 def update_transfer_manifest_element(info_package, ns, transfer_stats, transfer=None):
+    '''Installs new stats in the File_Area_Checksum_Manifest element'''
     file_area_transfer_manifest = info_package.find(f"{ns}File_Area_Transfer_Manifest")
     transfer_manifest = file_area_transfer_manifest.find(f"{ns}Transfer_Manifest")
     transfer_manifest.find(f"{ns}records").text = transfer_stats.linecount
@@ -96,6 +98,7 @@ def update_transfer_manifest_element(info_package, ns, transfer_stats, transfer=
 
 
 def get_stats(filepath):
+    '''Extracts file statistics from a text file'''
     filesize = os.path.getsize(filepath)
     linecount = sum(1 for x in open(filepath))
     checksum = get_checksum(filepath)
@@ -105,6 +108,7 @@ def get_stats(filepath):
         checksum=checksum)
 
 def get_checksum(filepath):
+    '''Calculates the md5 checksum of a file'''
     with(open(filepath, "rb") as file):
         md5 = hashlib.md5()
         md5.update(file.read())
