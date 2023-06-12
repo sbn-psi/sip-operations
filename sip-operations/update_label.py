@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+'''Updates the AIP and SIP checksums after a manual update'''
 
 import sys
 import argparse
