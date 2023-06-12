@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+'''Installs new checksums in the manifest files after a mass update'''
 
 import sys
 import argparse
