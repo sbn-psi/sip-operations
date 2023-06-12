@@ -24,6 +24,7 @@ def main():
  
 
 def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid, excluded_lidvids=[]):
+    '''Generates the SIP delta'''
     old_lids = read_old_entries(old_sips, bundle_lidvid)
     #print(old_lids)
     deltas = (x for x in read_sip(sip) if x["url"] not in old_lids and x["lidvid"] not in excluded_lidvids)
@@ -38,15 +39,19 @@ def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid, excluded_lidvids=
     return output_path
 
 def read_old_entries(old_sips, bundle_lidvid):
+    '''Reads LIDs from the previous SIP files'''
     return set(l for l in itertools.chain.from_iterable(extract_lids(x) for x in old_sips) if not l == bundle_lidvid)
 
 def extract_lids(sip):
+    '''Reads LIDs from a SIP file'''
     return (x["url"] for x in read_sip(sip))
 
 def read_sip(file_path: str):
+    '''Reads entries from a SIP file'''
     return (parse_sip_line(line) for line in open(file_path))
 
 def parse_sip_line(line: str):
+    '''Converts a raw text line to a SIP entry'''
     checksum, checksum_type, url, lidvid = line.strip().split("\t")
     return {
         "url": url,

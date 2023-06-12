@@ -19,6 +19,7 @@ def main():
     generate_checksum_delta(args.checksum, args.old_checksum, args.dest, args.suffix)
 
 def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filename, excluded_filenames):
+    '''Generates a the delta for the checksum manifests'''
     old_entries = read_old_entries(old_checksums, bundle_filename)
     deltas = (x for x in read_checksum(checksum) if x.filename not in old_entries and x.filename not in excluded_filenames)
     delta_lines = (f"{x.checksum}\t{x.filename}\r\n" for x in deltas)
@@ -31,14 +32,17 @@ def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filena
     return output_path
 
 def read_old_entries(old_checksums, bundle_filename):
+    '''Reads the previous checksum manifests'''
     return set(itertools.chain.from_iterable(
         (c.filename for c in read_checksum(x)  if not os.path.basename(c.filename) == os.path.basename(bundle_filename)) 
         for x in old_checksums))
 
 def read_checksum(file_path: str):
+    '''Reads a single checksum manifest'''
     return (parse_checksum_line(line) for line in open(file_path))
 
 def parse_checksum_line(line:str):
+    '''Converts a text line into a checksum manifest entry'''
     checksum, filename = line.strip().split("\t")
     return SimpleNamespace(
         checksum=checksum,
