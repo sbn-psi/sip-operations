@@ -2,7 +2,6 @@
 
 import argparse
 import hashlib
-from math import prod
 import sys
 from types import SimpleNamespace
 import os.path

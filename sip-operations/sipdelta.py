@@ -3,11 +3,7 @@
 import sys
 import argparse
 import itertools
-import tempfile
 import os.path
-import shutil
-import datetime
-from unittest import TestProgram
 
 OUT_FORMAT="{checksum}\t{checksum_type}\t{url}\t{lidvid}\r\n"
 

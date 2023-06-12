@@ -4,10 +4,6 @@ import argparse
 from cmath import inf
 import sys
 import os.path
-import tempfile
-import shutil
-import re
-import functools
 import hashlib
 from xml.etree.ElementTree import ElementTree
 from lxml import etree

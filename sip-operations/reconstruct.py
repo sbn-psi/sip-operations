@@ -2,7 +2,6 @@
 
 import sys
 import argparse
-import typing
 
 from dictops import patch_dict_list, dictify_file, join_dict_lists
 
