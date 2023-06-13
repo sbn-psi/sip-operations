@@ -15,6 +15,8 @@ This is the primary script, which will find all of the products in the SIP/AIP f
 
 `deltas.py --old_dir old_sip_dir --new_dir new_sip_dir --bundle_label bundle_gbo.ast.catalina.survey_v1.0.xml`
 
+`old_sip` dir may contain multiple SIP/AIP files. They will be combined into a single list of products to exclude. The SIP and transfer/checksum manifests should describe the same products, or *undefined behavior* will occur.
+
 A directory called `deltas` will be created inside of `new_sip_dir`, which will contain only the differences between `old_sip_dir` and `new_sip_dir`.
 
 ### Checksum replacer
