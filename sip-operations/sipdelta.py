@@ -24,10 +24,14 @@ def main():
  
 
 def generate_delta(old_sips, sip, dest, suffix, bundle_lidvid, excluded_lidvids=[]):
-    '''Generates the SIP delta'''
-    old_lids = read_old_entries(old_sips, bundle_lidvid)
-    #print(old_lids)
-    deltas = (x for x in read_sip(sip) if x["url"] not in old_lids and x["lidvid"] not in excluded_lidvids)
+    '''Generates the SIP delta.
+
+    The delta consists of files in the "new" sip for which there is not a
+    matching url in the "old" sips
+    '''
+    old_urls = read_old_entries(old_sips, bundle_lidvid)
+    #print(old_urls)
+    deltas = (x for x in read_sip(sip) if x["url"] not in old_urls and x["lidvid"] not in excluded_lidvids)
     delta_lines = (OUT_FORMAT.format(**x) for x in deltas)
     
     output_file = os.path.basename(sip).replace("sip", f"sip_{suffix}")

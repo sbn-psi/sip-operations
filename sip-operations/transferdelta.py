@@ -20,7 +20,12 @@ def main():
     generate_transfer_delta(args.transfer, args.old_transfer, args.dest, args.suffix)
 
 def generate_transfer_delta(transfer, old_transfers, dest, suffix, bundle_lidvid, excluded_lidvids=[]):
-    '''Generates the delta for the transfer manifest'''
+    '''
+    Generates the delta for the transfer manifest.
+
+    The delta consists of the entries in the "new" manifest for which there
+    is not a matching lidvid, filename pair in the "old" manifests.
+    '''
     old_entries = read_old_entries(old_transfers, bundle_lidvid)
     deltas = (x for x in read_transfer(transfer) 
         if (x.lidvid, x.filename) not in old_entries 
