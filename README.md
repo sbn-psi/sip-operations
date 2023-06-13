@@ -2,7 +2,10 @@
 
 ## Overview
 
-These are tools that are used to generate delta-sips that are easier for the NSSDCA to process. This takes a SIP directory and removes all of the files that were present in a previous version of a SIP.
+These are tools that are used to generate delta-sips that are easier for the NSSDCA to process. This takes a SIP directory and removes all of the files that were present in a previous version of a SIP. There is special handling for bundle and collection products:
+
+* A bundle product is always included, since this is necessary for NSSDCA, and CSS is designed so that the bundle version does not increment.
+* Only the latest version of a collection is included if there are multiple collections in a submisson. This reduces the number of redundant products that NSSDCA needs to ingest.
 
 ## Usage
 
@@ -28,8 +31,8 @@ If you need to udpate the product labels after a manual update, you can use `upd
 
 ## Requirements
 
-BeautifulSoup4
-lxml
+* BeautifulSoup4
+* lxml
 
 ## Current caveats
 
