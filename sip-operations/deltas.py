@@ -21,13 +21,14 @@ def main():
     parser.add_argument("--old_dir", required=True)
     parser.add_argument("--new_dir", required=True)
     parser.add_argument("--bundle_label", required=True)
+    parser.add_argument("--bundle_url", required=False, default="https://sbnarchive.psi.edu/pds4/surveys/gbo.ast.catalina.survey/bundle_gbo.ast.catalina.survey_v1.0.xml")
     args = parser.parse_args()
 
-    generate_deltas(args.old_dir, args.new_dir, args.bundle_label)
+    generate_deltas(args.old_dir, args.new_dir, args.bundle_label, args.bundle_url)
 
     return 0
 
-def generate_deltas(old_dir, new_dir, bundle_label, bundle_url="https://sbnarchive.psi.edu/pds4/surveys/gbo.ast.catalina.survey/bundle_gbo.ast.catalina.survey_v1.0.xml"):
+def generate_deltas(old_dir, new_dir, bundle_label, bundle_url):
     '''Generates deltas for the SIP, AIP and checksum manifest'''
     dest = os.path.join(new_dir, "deltas")
     os.makedirs(dest, exist_ok=True)
