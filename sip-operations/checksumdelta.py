@@ -19,7 +19,11 @@ def main():
     generate_checksum_delta(args.checksum, args.old_checksum, args.dest, args.suffix)
 
 def generate_checksum_delta(checksum, old_checksums, dest, suffix, bundle_filename, excluded_filenames):
-    '''Generates a the delta for the checksum manifests'''
+    '''
+    Generates a the delta for the checksum manifests.
+    The delta consists of all files in the "new" file for which there is not 
+    a matching filename present in the "old" files.
+    '''
     old_entries = read_old_entries(old_checksums, bundle_filename)
     deltas = (x for x in read_checksum(checksum) if x.filename not in old_entries and x.filename not in excluded_filenames)
     delta_lines = (f"{x.checksum}\t{x.filename}\r\n" for x in deltas)
